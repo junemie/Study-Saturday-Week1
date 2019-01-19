@@ -14,9 +14,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+//our code:
 app.use("/student", studentRouter);
 // Listen on server
-
 app.listen(3000, () => {
   console.log("Server is listening on port 3000!");
 });
