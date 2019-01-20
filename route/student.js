@@ -1,69 +1,91 @@
-const express = require("express");
-const router = express.Router();
-let students = [{ id: 1, name: "Dan" }, { id: 2, name: "Karen" }];
+const studentRouter = require("express").Router();
+const student = require("express");
 
-//if someome wasnt to get information about sutdents, is to send that file for them to
-router.get("/", (req, res, next) => {
-  res.send(students);
-});
+//for practice: we are using fake data but normally you would be importing this and it would look like this:
+/*
+You will be saying ok get the data from db folder where student information is .
+Because module.export is exporting object, we have to decontruct and say const {studentData} = db;
+We are storing to student variable to use that information.
 
-//post and put have req.body -> an object that is being passed.
-//addig a new thing to a table
+const db = require("../db/db")
+const {students} = db;
+*/
+let studentData = [
+  { id: 1, name: "June" },
+  { id: 2, name: "Huibin" },
+  { id: 3, name: "Catherine" }
+];
 
-router.post("/", (req, res, next) => {
-  //its adding the new student (req.body) to the students array
-  //or optional:
-  const updatedStudents = [...students, req.body];
-  students.push(req.body);
-});
-
-//to modify existing data we use put. We would page we would specify.
-
-router.put("/:studentId", (req, res, next) => {
+//we said on app.js every time someone goes to /student
+//get '/' -> this means this is /student
+studentRouter.get("/", (req, res, next) => {
   try {
-    const studentId = req.params.studentId;
-    //we want to find corresponding id based from the students to make change
-    //specific student is found that you want to make change....finding which student to update.
-    const currentStudent = students.filter(st => {
-      return st.id === Number(req.params.studentId);
+    res.send({ ...studentData });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// get id!
+
+studentRouter.get("/:id", (req, res, next) => {
+  try {
+    let idNum = Number(req.params.id);
+    let returnStudent = studentData.filter(studentObj => {
+      if (studentObj.id === idNum) {
+        return true;
+      }
     })[0];
-    //We have the [0] bc we want the object inside of the array!!!!!!!
-    //we created a new objcet and copied over, and we spreated over.
-
-    //if we wanted to update specific key from students table. we want to do below:
-    const change = req.body; //{name: Matthew}
-    //id: 2, name: "Karen" , name: Kristin
-    //currentStudent.name = change.name
-    //{id: 2, name: "Karen" , name: Kristin}
-    const updatedStudents = { ...currentStudent, ...change };
-    //if you use spread operator on object,  it return key value pairs and you can replace with next parameter. We use spread operator because we don't know what value has been changed.
-
-    //when you use spread operator with an object it is looking as key value pairs... And we are able to update whatever the change that was made in value...
-    /*
-    Example:
-    currentObj = {id: 2, name: "Karen" }
-    newInput = {name: Kristin}
-    const updatedObj = {...currentObj, ...currentObj};
-    now the updatedObj = {id: 2, name: "Kristin"}
-    */
-
-    // currentStudent.name = change.name
-    res.send(updatedStudents);
+    res.send(returnStudent);
   } catch (error) {
     next(err);
   }
 });
 
-//which record is going to be deleted.
-//
-router.delete("/:id", (req, res, next) => {
+//post -> creates new information
+studentRouter.post("/", (req, res, next) => {
   try {
-    //we are going to return all students that does not match id number
-    const updatedStudents = students.filter(student => {
-      return student.id !== Numnber(req.params.id);
-    });
-    //returns the updated table to the browser.
-    res.send(updatedStudents);
-  } catch (error) {}
+    let info = req.body;
+    let newStudent = { id: info.id, name: info.name };
+    studentData.push(newStudent);
+    res.send(newStudent);
+  } catch (error) {
+    next(error);
+  }
 });
-module.exports = router;
+
+//put -> update information
+
+studentRouter.put("/:id", (req, res, next) => {
+  try {
+    //1. store currentStudet variable to store the student you want to update
+    //2. store the chang you want to make in a variable
+    //3. store newUdated information in a variable using {..., ...}
+    //4. update the data
+    let idNum = Number(req.params.id);
+    let currentStudet = studentData.filter(studentObj => {
+      return idNum === studentObj.id;
+    })[0];
+    let change = req.body;
+    let updatedStudent = { ...currentStudet, ...change };
+    studentData[idNum] = updatedStudent;
+    res.send(studentData);
+  } catch (error) {
+    next(error);
+  }
+});
+
+studentRouter.delete("/:id", (req, res, next) => {
+  try {
+    let newData = studentData.filter(studentObj => {
+      if (studentObj.id !== +req.params.id) {
+        return true;
+      }
+    });
+    studentData = newData;
+    res.send(studentData);
+  } catch (error) {
+    next(error);
+  }
+});
+module.exports = studentRouter;
